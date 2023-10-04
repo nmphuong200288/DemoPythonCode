@@ -1,7 +1,8 @@
+#Import boto3 library
 import boto3
 conn = boto3.client('rds', region_name='ap-northeast-2')
 ec2 = boto3.client('ec2')
-
+#Create a subnet
 conn.create_db_subnet_group(
     DBSubnetGroupName='databasesubnet',
     DBSubnetGroupDescription='using-privatesubnet-rds',
@@ -18,6 +19,7 @@ conn.create_db_subnet_group(
     ]
 )
 
+#Create a security Group
 response = ec2.create_security_group(
     GroupName='MyDBSecurityGroup', 
     Description='Description for MyDBSecurityGroup', 
@@ -42,7 +44,7 @@ ec2.authorize_security_group_ingress(
     ],
 )
 
-
+#Invoke create_db_instance method
 database = conn.create_db_instance(
 
         AllocatedStorage=10,
@@ -66,5 +68,5 @@ database = conn.create_db_instance(
         ],
         
     )
-
+#print info of database 
 print (database)
