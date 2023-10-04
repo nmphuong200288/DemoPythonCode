@@ -1,70 +1,13 @@
+#Import library boto3
 import boto3
-conn = boto3.client('rds', region_name='ap-northeast-2')
-ec2 = boto3.client('ec2')
-
-conn.create_db_subnet_group(
-    DBSubnetGroupName='databasesubnet',
-    DBSubnetGroupDescription='using-privatesubnet-rds',
-    SubnetIds=[
-        'subnet-0c9f389abf0e6614a',
-        'subnet-064df2573ead56b0f',
-    ],
-    Tags=[
-        {
-            'Key': 'DatabaseRds',
-            'Value': 'mysql8.0'
-            
-        },
-    ]
-)
-
-response = ec2.create_security_group(
-    GroupName='MyDBSecurityGroup', 
-    Description='Description for MyDBSecurityGroup', 
-    VpcId='vpc-0bafbe97c1d5315fa',
-    )
-security_group_id = response['GroupId']
-
-ec2.authorize_security_group_ingress(
-    GroupId=security_group_id,
-    IpPermissions=[
-        {
-            'IpProtocol': 'tcp',
-            'FromPort': 3306,
-            'IpRanges': [
-                {
-                    'CidrIp': '0.0.0.0/0',
-                    'Description': 'RDS Access from anywhere',
-                },
-            ],
-            'ToPort': 3306,
-        },
-    ],
-)
-
-
-database = conn.create_db_instance(
-
-        AllocatedStorage=10,
-        DBName="MYRDS",
-        DBInstanceIdentifier="my-first-rds-instance",
-        DBInstanceClass="db.t2.micro",
-        Engine="mysql",
-        MasterUsername="root",
-        MasterUserPassword="pass1234",
-        Port=3306,
-        BackupRetentionPeriod=0,
-        PubliclyAccessible=True,
-        DBSubnetGroupName='databasesubnet',
-        VpcSecurityGroupIds=[response['GroupId']],
-        
-        Tags=[
-            {
-                'Key': 'mydatabase',
-                'Value': 'Mysql'
-            },
-        ],
-        
-    )
-
-print (database)
+#Declare region that you want use it
+region = 'ap-southeast-2'
+#Define a lambda_handler function and function called when lambda event is triggered
+def lambda_handler(event, lambda_context):
+    #Create an object ec2 and maybe using it to access to ec2 resources
+    ec2 = boto3.resource("ec2", region_name=region)
+    for vol in ec2.volumes.all():   #Iterate over all the ec2 volumes 
+        volume = ec2.Volume(vol.id)  #Get id of volume and stored it in the volume variable.
+        desc = 'This is a snapshot of {}'.format(volume)
+        print("Creating Snapshot of the following Volume : ", volume)
+        volume.create_snapshot(Description=desc) # Using create_snapshot method to create snapshot
