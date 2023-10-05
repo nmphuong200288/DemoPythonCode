@@ -16,5 +16,5 @@ def lambda_handler(event, lambda_context):
     #for reservation in reservations:
         for instance in reservation["Instances"]:
             instance_id = instance["InstanceId"]
-            #ec2_client.start_instances(InstanceIds=[instance_id])
+            ec2_client.start_instances(InstanceIds=[instance_id])
             print(f"Instances Started " + str(instance_id))
